@@ -24,8 +24,7 @@ data FR3D = FR3D
 -- | A single basepair in a basepair system.
 
 data Basepair = Basepair
-  { chain :: ByteString
-  , interaction :: ByteString
+  { interaction :: ByteString
   -- nucleotide 1
   , nucleotide1 :: Char
   , pdbnumber1 :: Int
