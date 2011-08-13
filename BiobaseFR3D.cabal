@@ -34,7 +34,7 @@ library
 
   exposed-modules:
     Biobase.FR3D
+    Biobase.FR3D.Import
 
   ghc-options:
     -O2
-
