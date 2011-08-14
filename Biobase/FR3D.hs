@@ -40,7 +40,8 @@ data Basepair = Basepair
 -- | Linearized FR3D format.
 
 data LinFR3D = LinFR3D
-  { sequence :: ByteString
+  { pdbID :: ByteString
+  , sequence :: ByteString
   , pairs :: [(Int,Int,String)] -- TODO String -> CWW ?!
   } deriving (Show)
 
@@ -50,7 +51,8 @@ data LinFR3D = LinFR3D
 
 linearizeFR3D :: FR3D -> LinFR3D
 linearizeFR3D FR3D{..} = LinFR3D
-  { sequence = BS.intercalate "&" $ L.map snd chains
+  { pdbID = pdbid
+  , sequence = BS.intercalate "&" $ L.map snd chains
   , pairs = L.map f basepairs
   } where
       trans = snd $ L.mapAccumL ( \acc (x,y) -> (acc + 1 + BS.length y, (x,acc))
