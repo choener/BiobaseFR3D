@@ -5,6 +5,9 @@
 -- mostly interested in the "basepairs" files. In contrast to the RNAstrand
 -- library or melting experiments, these data sets provide non-canonical RNA
 -- pairing.
+--
+-- Note that FR3D entries contain basepairs both in (i,j) as well as (j,i)
+-- orientation (with i<j).
 
 module Biobase.FR3D where
 
@@ -57,7 +60,7 @@ linearizeFR3D FR3D{..} = LinFR3D
   } where
       trans = snd $ L.mapAccumL ( \acc (x,y) -> (acc + 1 + BS.length y, (x,acc))
                                 ) 0 chains
-      f Basepair{..} =  ( maybe (-1) (\v -> v+pdbnumber1) $ L.lookup chain1 trans
-                        , maybe (-1) (\v -> v+pdbnumber2) $ L.lookup chain2 trans
+      f Basepair{..} =  ( maybe (-1) (\v -> v+seqpos1) $ L.lookup chain1 trans
+                        , maybe (-1) (\v -> v+seqpos2) $ L.lookup chain2 trans
                         , BS.unpack interaction
                         )

@@ -34,7 +34,7 @@ iFR3D = joinI $ enumLinesBS f where
     return FR3D
       { pdbid = maybe "" (BS.take 4) $ listToMaybe xs
       , chains = L.map (second (BS.drop 1) . BS.span isAlpha . BS.drop 2) cs
-      , basepairs = L.map bs2basepair xs
+      , basepairs = L.map bs2basepair $ xs
       }
 
 -- | Helper function turning a bytestring line into a basepair entry
