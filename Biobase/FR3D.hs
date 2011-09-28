@@ -6,7 +6,7 @@
 -- library or melting experiments, these data sets provide non-canonical RNA
 -- pairing.
 --
--- Note that FR3D entries contain basepairs both in (i,j) as well as (j,i)
+-- NOTE that FR3D entries contain basepairs both in (i,j) as well as (j,i)
 -- orientation (with i<j).
 
 module Biobase.FR3D where
@@ -64,3 +64,14 @@ linearizeFR3D FR3D{..} = LinFR3D
                         , maybe (-1) (\v -> v+seqpos2) $ L.lookup chain2 trans
                         , BS.unpack interaction
                         )
+
+class RemoveDuplicatePairs a where
+  removeDuplicatePairs :: a -> a
+
+instance RemoveDuplicatePairs FR3D where
+  removeDuplicatePairs x@FR3D{..} = x{basepairs = L.filter f basepairs} where
+    f Basepair{..} = (chain1,seqpos1) < (chain2,seqpos2)
+
+instance RemoveDuplicatePairs LinFR3D where
+  removeDuplicatePairs x@LinFR3D{..} = x{pairs = L.filter f pairs} where
+    f (x,y,_) = x<y
