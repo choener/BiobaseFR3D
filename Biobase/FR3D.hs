@@ -14,6 +14,8 @@ module Biobase.FR3D where
 import Data.ByteString.Char8 as BS
 import Data.List as L
 
+import Biobase.Secondary
+
 
 
 -- | Encapsulates all the "basepairs" information.
@@ -27,7 +29,7 @@ data FR3D = FR3D
 -- | A single basepair in a basepair system.
 
 data Basepair = Basepair
-  { interaction :: ByteString
+  { interaction :: ExtPairAnnotation
   -- nucleotide 1
   , nucleotide1 :: Char
   , pdbnumber1 :: Int
@@ -45,7 +47,7 @@ data Basepair = Basepair
 data LinFR3D = LinFR3D
   { pdbID :: ByteString
   , sequence :: ByteString
-  , pairs :: [(Int,Int,String)] -- TODO String -> CWW ?!
+  , pairs :: [ExtPairIdx] -- [(Int,Int,String)] -- TODO String -> CWW ?!
   } deriving (Show)
 
 -- | The default format is a bit unwieldy; Linearization assumes that all
@@ -60,9 +62,9 @@ linearizeFR3D FR3D{..} = LinFR3D
   } where
       trans = snd $ L.mapAccumL ( \acc (x,y) -> (acc + 1 + BS.length y, (x,acc))
                                 ) 0 chains
-      f Basepair{..} =  ( maybe (-1) (\v -> v+seqpos1) $ L.lookup chain1 trans
-                        , maybe (-1) (\v -> v+seqpos2) $ L.lookup chain2 trans
-                        , BS.unpack interaction
+      f Basepair{..} =  ( ( maybe (-1) (\v -> v+seqpos1) $ L.lookup chain1 trans
+                          , maybe (-1) (\v -> v+seqpos2) $ L.lookup chain2 trans )
+                        , interaction
                         )
 
 class RemoveDuplicatePairs a where
@@ -74,4 +76,4 @@ instance RemoveDuplicatePairs FR3D where
 
 instance RemoveDuplicatePairs LinFR3D where
   removeDuplicatePairs x@LinFR3D{..} = x{pairs = L.filter f pairs} where
-    f (x,y,_) = x<y
+    f ((x,y),_) = x<y
