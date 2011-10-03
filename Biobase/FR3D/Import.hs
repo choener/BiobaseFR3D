@@ -33,7 +33,7 @@ iFR3D = joinI $ enumLinesBS f where
     xs <- stream2list -- and all basepairs
     return FR3D
       { pdbid = maybe "" (BS.take 4) $ listToMaybe xs
-      , chains = L.map (second (BS.drop 1) . BS.span isAlpha . BS.drop 2) cs
+      , chains = L.map (second (BS.drop 1) . BS.span isAlphaNum . BS.drop 2) cs
       , basepairs = L.map bs2basepair $ xs
       }
 
