@@ -16,6 +16,8 @@ import Data.List as L
 import Data.Maybe
 import System.FilePath.Find as F
 
+import Biobase.Secondary
+
 import Biobase.FR3D
 
 
@@ -43,7 +45,7 @@ bs2basepair :: ByteString -> Basepair
 bs2basepair s
   | L.length ws /= 10 = error $ "can't parse line: " ++ unpack s
   | otherwise = Basepair
-    { interaction = read . BS.unpack $ ws!!1
+    { interaction = threeChar . BS.unpack $ ws!!1
     , nucleotide1 = BS.head $ ws!!2
     , pdbnumber1  = maybe (-1) fst . readInt $ ws!!3
     , chain1      = ws!!4
