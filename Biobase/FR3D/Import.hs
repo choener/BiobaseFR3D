@@ -49,11 +49,11 @@ bs2basepair s
     , nucleotide1 = BS.head $ ws!!2
     , pdbnumber1  = maybe (-1) fst . readInt $ ws!!3
     , chain1      = ws!!4
-    , seqpos1     = maybe (-1) fst . readInt $ ws!!5
+    , seqpos1     = maybe (-1) (subtract 1 . fst) . readInt $ ws!!5
     , nucleotide2 = BS.head $ ws!!6
     , pdbnumber2  = maybe (-1) fst . readInt $ ws!!7
     , chain2      = ws!!8
-    , seqpos2     = maybe (-1) fst . readInt $ ws!!9
+    , seqpos2     = maybe (-1) (subtract 1 . fst) . readInt $ ws!!9
     }
   where ws = BS.words s
 
