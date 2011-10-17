@@ -77,3 +77,31 @@ instance RemoveDuplicatePairs FR3D where
 instance RemoveDuplicatePairs LinFR3D where
   removeDuplicatePairs x@LinFR3D{..} = x{pairs = L.filter f pairs} where
     f ((x,y),_) = x<y
+
+
+-- ** Checking data structures
+--
+-- Two functions to check 'FR3D' and 'LinFR3D' data structures.
+
+-- | Checks an FR3D file for correctness. Returns either a Left on errors or
+-- Right FR3D if correct.
+--
+-- TODO chain existence check
+
+checkFR3D fr3d@FR3D{..}
+  | L.null xs = Right fr3d
+  | otherwise = Left xs
+  where
+    xs = [ x
+         | x <- basepairs
+         , let Just c1 = lookup (chain1 x) chains
+         , let Just c2 = lookup (chain2 x) chains
+         , nucleotide1 x /= c1 `BS.index` seqpos1 x || nucleotide2 x /= c2 `BS.index` seqpos2 x
+         ]
+
+checkLinFR3D linfr3d@LinFR3D{..}
+  | L.null xs = Right linfr3d
+  | otherwise = Left xs
+  where
+    xs = [ x
+         | x <- pairs
