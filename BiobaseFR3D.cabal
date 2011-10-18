@@ -1,5 +1,5 @@
 name:           BiobaseFR3D
-version:        0.2.1.0
+version:        0.2.2.0
 author:         Christian Hoener zu Siederdissen
 maintainer:     choener@tbi.univie.ac.at
 homepage:       http://www.tbi.univie.ac.at/~choener/
@@ -28,6 +28,9 @@ description:
                 .
                 * Zero-based indexing (FR3D is one-based!) for sequence
                   positions. We do not change the nucleotide PDB number.
+                .
+                * Some sanity checks, a number of FR3D files fall through at
+                  this and need to be checked for consistency
 
 
 
@@ -40,7 +43,7 @@ library
     containers,
     filemanip,
     iteratee,
-    BiobaseXNA >= 0.5.4
+    BiobaseXNA >= 0.5.5
 
   exposed-modules:
     Biobase.FR3D

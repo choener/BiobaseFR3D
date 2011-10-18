@@ -14,6 +14,7 @@ module Biobase.FR3D where
 import Data.ByteString.Char8 as BS
 import Data.List as L
 
+import Biobase.Primary
 import Biobase.Secondary
 
 
@@ -47,7 +48,7 @@ data Basepair = Basepair
 data LinFR3D = LinFR3D
   { pdbID :: ByteString
   , sequence :: ByteString
-  , pairs :: [ExtPairIdx] -- [(Int,Int,String)] -- TODO String -> CWW ?!
+  , pairs :: [(ExtPairIdx,ExtPair)] -- we keep the ExtPair information as provided by the non-linearized FR3D data
   } deriving (Show)
 
 -- | The default format is a bit unwieldy; Linearization assumes that all
@@ -62,10 +63,13 @@ linearizeFR3D FR3D{..} = LinFR3D
   } where
       trans = snd $ L.mapAccumL ( \acc (x,y) -> (acc + 1 + BS.length y, (x,acc))
                                 ) 0 chains
-      f Basepair{..} =  ( ( maybe (-1) (\v -> v+seqpos1) $ L.lookup chain1 trans
-                          , maybe (-1) (\v -> v+seqpos2) $ L.lookup chain2 trans )
-                        , interaction
-                        )
+      f Basepair{..} =  (pi,p) where
+        pi = ( ( maybe (-1) (\v -> v+seqpos1) $ L.lookup chain1 trans
+               , maybe (-1) (\v -> v+seqpos2) $ L.lookup chain2 trans
+               )
+             , interaction
+             )
+        p = ( (mkNuc nucleotide1, mkNuc nucleotide2), interaction )
 
 class RemoveDuplicatePairs a where
   removeDuplicatePairs :: a -> a
@@ -75,7 +79,7 @@ instance RemoveDuplicatePairs FR3D where
     f Basepair{..} = (chain1,seqpos1) < (chain2,seqpos2)
 
 instance RemoveDuplicatePairs LinFR3D where
-  removeDuplicatePairs x@LinFR3D{..} = x{pairs = L.filter f pairs} where
+  removeDuplicatePairs x@LinFR3D{..} = x{pairs = L.filter (f.fst) pairs} where
     f ((x,y),_) = x<y
 
 
@@ -103,3 +107,16 @@ checkFR3D fr3d@FR3D{..}
          || nucleotide2 x /= c2 `BS.index` seqpos2 x
          ]
 
+checkLinFR3D linfr3d@LinFR3D{..}
+  | L.null xs = Right linfr3d
+  | otherwise = Left (linfr3d,xs)
+  where
+    xs = [ x
+         | x@(pi,p) <- pairs
+         ,  baseL pi < 0
+         || baseR pi < 0
+         || baseL pi >= BS.length sequence
+         || baseR pi >= BS.length sequence
+         || mkNuc (sequence `BS.index` baseL pi) /= baseL p
+         || mkNuc (sequence `BS.index` baseR pi) /= baseR p
+         ]
