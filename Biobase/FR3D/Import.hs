@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | Importing of FR3D data. Both "basepairs" and "near interactions" are
@@ -14,6 +15,7 @@ import Data.Iteratee.IO as I
 import Data.Iteratee.ListLike as I
 import Data.List as L
 import Data.Maybe
+import qualified Data.Map as M
 import System.FilePath.Find as F
 
 import Biobase.Secondary
@@ -30,14 +32,25 @@ iFR3D = joinI $ enumLinesBS f where
   f = do
     I.head -- fr3d header
     I.head -- sequence header
-    cs <- I.break ((/="#") . BS.take 1)
+    cs' <- I.break ((/="#") . BS.take 1)
     I.head -- basepairs header
     xs <- stream2list -- and all basepairs
+    let cs = L.map (second (BS.drop 1) . BS.span isAlphaNum . BS.drop 2) $ cs'
     return FR3D
       { pdbid = maybe "" (BS.take 4) $ listToMaybe xs
-      , chains = L.map (second (BS.drop 1) . BS.span isAlphaNum . BS.drop 2) cs
-      , basepairs = L.map bs2basepair $ xs
+      , chains = cs
+      , basepairs = {- L.map (fixSeqpos cs) . -} L.map bs2basepair $ xs
       }
+
+{-
+ - This would be for fixing sequence position information, but it seems that
+ - FR3D does not store this info consistently...
+ -
+fixSeqpos :: [(ByteString,ByteString)] -> Basepair -> Basepair
+fixSeqpos cs bp@Basepair{..} = bp{seqpos1 = seqpos1 - cl M.! chain1, seqpos2 = seqpos2 - cl M.! chain2} where
+  cl = M.fromList . snd . L.mapAccumL f 0 $ cs
+  f acc x = (acc + BS.length (snd x), (fst x, acc))
+-}
 
 -- | Helper function turning a bytestring line into a basepair entry
 

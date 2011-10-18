@@ -1,5 +1,5 @@
 name:           BiobaseFR3D
-version:        0.2.0.0
+version:        0.2.1.0
 author:         Christian Hoener zu Siederdissen
 maintainer:     choener@tbi.univie.ac.at
 homepage:       http://www.tbi.univie.ac.at/~choener/
@@ -37,6 +37,7 @@ library
   build-depends:
     base >3 && <5,
     bytestring,
+    containers,
     filemanip,
     iteratee,
     BiobaseXNA >= 0.5.4
