@@ -42,15 +42,17 @@ data Basepair = Basepair
   , pdbnumber2 :: Int
   , chain2 :: ByteString
   , seqpos2 :: Int
-  } deriving (Show)
+  } deriving (Show,Eq,Ord)
 
 -- | Linearized FR3D format.
 
 data LinFR3D = LinFR3D
   { pdbID :: ByteString
   , sequence :: ByteString
-  , pairs :: [(ExtPairIdx,ExtPair,Basepair)] -- we keep the ExtPair information as provided by the non-linearized FR3D data
+  , pairs :: [TriPair]
   } deriving (Show)
+
+type TriPair = (ExtPairIdx,ExtPair,Basepair) -- we keep the ExtPair information as provided by the non-linearized FR3D data
 
 -- | The default format is a bit unwieldy; Linearization assumes that all
 -- sequences are in 5'->3' order; then produces one sequence with "&"
