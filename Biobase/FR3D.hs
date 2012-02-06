@@ -13,6 +13,7 @@ module Biobase.FR3D where
 
 import Data.ByteString.Char8 as BS
 import Data.List as L
+import Data.Tuple.Select (sel1)
 
 import Biobase.Primary
 import Biobase.Secondary
@@ -48,7 +49,7 @@ data Basepair = Basepair
 data LinFR3D = LinFR3D
   { pdbID :: ByteString
   , sequence :: ByteString
-  , pairs :: [(ExtPairIdx,ExtPair)] -- we keep the ExtPair information as provided by the non-linearized FR3D data
+  , pairs :: [(ExtPairIdx,ExtPair,Basepair)] -- we keep the ExtPair information as provided by the non-linearized FR3D data
   } deriving (Show)
 
 -- | The default format is a bit unwieldy; Linearization assumes that all
@@ -63,7 +64,7 @@ linearizeFR3D FR3D{..} = LinFR3D
   } where
       trans = snd $ L.mapAccumL ( \acc (x,y) -> (acc + 1 + BS.length y, (x,acc))
                                 ) 0 chains
-      f Basepair{..} =  (pi,p) where
+      f bp@Basepair{..} =  (pi,p,bp) where
         pi = ( ( maybe (-1) (\v -> v+seqpos1) $ L.lookup chain1 trans
                , maybe (-1) (\v -> v+seqpos2) $ L.lookup chain2 trans
                )
@@ -79,7 +80,7 @@ instance RemoveDuplicatePairs FR3D where
     f Basepair{..} = (chain1,seqpos1) < (chain2,seqpos2)
 
 instance RemoveDuplicatePairs LinFR3D where
-  removeDuplicatePairs x@LinFR3D{..} = x{pairs = L.filter (f.fst) pairs} where
+  removeDuplicatePairs x@LinFR3D{..} = x{pairs = L.filter (f.sel1) pairs} where
     f ((x,y),_) = x<y
 
 
@@ -112,7 +113,7 @@ checkLinFR3D linfr3d@LinFR3D{..}
   | otherwise = Left (linfr3d,xs)
   where
     xs = [ x
-         | x@(pi,p) <- pairs
+         | x@(pi,p,_) <- pairs
          ,  baseL pi < 0
          || baseR pi < 0
          || baseL pi >= BS.length sequence
